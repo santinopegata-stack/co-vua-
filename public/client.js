@@ -317,11 +317,27 @@ function updateStatus(status) {
   statusEl.textContent = text;
 }
 
+// Tim o cua vua dang bi chieu (vua cua ben sap di, vi ho la nguoi dang bi chieu)
+function findKingInCheckSquare() {
+  if (!game.isCheck()) return null;
+  const turnColor = game.turn();
+  const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
+  for (const file of files) {
+    for (let rank = 1; rank <= 8; rank++) {
+      const sq = file + rank;
+      const piece = game.get(sq);
+      if (piece && piece.type === "k" && piece.color === turnColor) return sq;
+    }
+  }
+  return null;
+}
+
 function renderBoard() {
   boardEl.innerHTML = "";
 
   const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
   const ranks = ["8", "7", "6", "5", "4", "3", "2", "1"];
+  const checkSquare = findKingInCheckSquare();
 
   // Neu la quan Den thi lat ban co de nguoi choi luon nhin thay quan minh o phia duoi
   const orderedFiles = myColor === "b" ? [...files].reverse() : files;
@@ -344,6 +360,9 @@ function renderBoard() {
       }
       if (legalTargets.includes(square)) {
         squareEl.classList.add("legal-move");
+      }
+      if (square === checkSquare) {
+        squareEl.classList.add("in-check");
       }
 
       const piece = game.get(square);

@@ -316,7 +316,7 @@ h1 {
 }
 
 #board {
-  --board-size: min(92vw, 70vh, 560px);
+  --board-size: min(94vw, 82vh, 820px);
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(8, 1fr);
@@ -369,6 +369,21 @@ h1 {
 
 .last-move {
   background: #f6f682 !important;
+}
+
+.in-check {
+  background: radial-gradient(circle, rgba(255, 40, 40, 0.9) 0%, rgba(255, 40, 40, 0.55) 45%, rgba(255, 40, 40, 0) 75%) !important;
+  animation: check-pulse 1s ease-in-out infinite;
+}
+
+@keyframes check-pulse {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.25);
+  }
 }
 
 /* ---------- Responsive: dien thoai ---------- */
