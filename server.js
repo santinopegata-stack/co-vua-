@@ -24,6 +24,19 @@ function enterRoom(socket, roomCode, color) {
   socket.emit("joined", { color, roomCode });
 }
 
+function leaveRoom(socket) {
+  const currentRoom = socket.data.currentRoom;
+  if (!currentRoom) return;
+  const room = rooms.get(currentRoom);
+  socket.data.currentRoom = null;
+  socket.leave(currentRoom);
+  if (!room) return;
+
+  // Mot trong hai nguoi roi phong -> bao cho nguoi con lai va xoa han phong nay
+  socket.to(currentRoom).emit("opponent-left");
+  rooms.delete(currentRoom);
+}
+
 function removeFromTournament(socket) {
   const code = socket.data.tournamentCode;
   if (!code) return;
@@ -108,10 +121,15 @@ io.on("connection", (socket) => {
     io.to(roomCode).emit("move-made", {
       fen: game.fen(),
       lastMove: { from, to },
+      san: move.san,
+      piece: move.piece,
+      color: move.color,
       turn: game.turn(),
       status,
     });
   });
+
+  socket.on("leave-room", () => leaveRoom(socket));
 
   // ---------- Giai dau: ghep cap ngau nhien toi da 10 nguoi ----------
 
@@ -206,15 +224,7 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     removeFromTournament(socket);
-
-    const currentRoom = socket.data.currentRoom;
-    if (!currentRoom) return;
-    const room = rooms.get(currentRoom);
-    if (!room) return;
-
-    // Mot trong hai nguoi thoat -> bao cho nguoi con lai va xoa han phong nay
-    socket.to(currentRoom).emit("opponent-left");
-    rooms.delete(currentRoom);
+    leaveRoom(socket);
   });
 });
 

@@ -7,28 +7,51 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>♟ Cờ Vua Online</h1>
+  <header class="site-header">
+    <h1>♟ Cờ Vua Online</h1>
+    <p class="tagline">Chơi cờ vua trực tuyến cùng bạn bè — nhanh, đơn giản, hoàn toàn miễn phí.</p>
+  </header>
 
   <!-- Man hinh chon che do choi -->
-  <div id="mode-menu">
-    <div class="menu-decor" aria-hidden="true">
-      <img class="decor-piece decor-piece--1" src="https://lichess1.org/assets/piece/cburnett/bK.svg" alt="" />
-      <img class="decor-piece decor-piece--2" src="https://lichess1.org/assets/piece/cburnett/wQ.svg" alt="" />
-      <img class="decor-piece decor-piece--3" src="https://lichess1.org/assets/piece/cburnett/bN.svg" alt="" />
-      <img class="decor-piece decor-piece--4" src="https://lichess1.org/assets/piece/cburnett/wR.svg" alt="" />
-      <div class="decor-board decor-board--1"></div>
-      <div class="decor-board decor-board--2"></div>
+  <div id="menu-screen">
+    <div id="mode-menu">
+      <div class="menu-decor" aria-hidden="true">
+        <img class="decor-piece decor-piece--1" src="https://lichess1.org/assets/piece/cburnett/bK.svg" alt="" />
+        <img class="decor-piece decor-piece--2" src="https://lichess1.org/assets/piece/cburnett/wQ.svg" alt="" />
+        <img class="decor-piece decor-piece--3" src="https://lichess1.org/assets/piece/cburnett/bN.svg" alt="" />
+        <img class="decor-piece decor-piece--4" src="https://lichess1.org/assets/piece/cburnett/wR.svg" alt="" />
+        <div class="decor-board decor-board--1"></div>
+        <div class="decor-board decor-board--2"></div>
+      </div>
+
+      <button id="mode-friend" class="mode-btn">
+        <span class="mode-btn__icon">👥</span> Chơi với bạn
+      </button>
+      <button id="mode-robot" class="mode-btn">
+        <span class="mode-btn__icon">🤖</span> Chơi với máy
+      </button>
+      <button id="mode-tournament" class="mode-btn mode-btn--accent">
+        <span class="mode-btn__icon">🏆</span> Tạo giải đấu (tối đa 10 người)
+      </button>
     </div>
 
-    <button id="mode-friend" class="mode-btn">
-      <span class="mode-btn__icon">👥</span> Chơi với bạn
-    </button>
-    <button id="mode-robot" class="mode-btn">
-      <span class="mode-btn__icon">🤖</span> Chơi với máy
-    </button>
-    <button id="mode-tournament" class="mode-btn mode-btn--accent">
-      <span class="mode-btn__icon">🏆</span> Tạo giải đấu (tối đa 10 người)
-    </button>
+    <div id="features-row">
+      <div class="feature-card">
+        <span class="feature-card__icon">🔗</span>
+        <strong>Mã phòng riêng tư</strong>
+        <p>Tự tạo mã phòng, chỉ người biết mã mới vào chơi cùng được.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-card__icon">🧠</span>
+        <strong>AI biết suy nghĩ</strong>
+        <p>Máy tính trước nhiều nước đi, chơi hợp lý và có tính thử thách thật sự.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-card__icon">🏆</span>
+        <strong>Giải đấu ngẫu nhiên</strong>
+        <p>Gom tới 10 người vào một giải, hệ thống tự ghép cặp công bằng.</p>
+      </div>
+    </div>
   </div>
 
   <!-- Man hinh phong ma (choi voi 1 nguoi ban) -->
@@ -66,9 +89,21 @@
   </div>
 
   <div id="game" class="hidden">
+    <div class="game-toolbar">
+      <button id="leave-game-btn" class="leave-btn">✕ Rời phòng</button>
+    </div>
     <p id="status"></p>
     <div id="board"></div>
+
+    <div id="move-history-box">
+      <h3>Lịch sử nước đi</h3>
+      <ol id="move-history-list"></ol>
+    </div>
   </div>
+
+  <footer class="site-footer">
+    <p>♟ Cờ Vua Online — tự xây dựng bằng Node.js, Socket.io &amp; chess.js</p>
+  </footer>
 
   <script src="/socket.io/socket.io.js"></script>
   <script type="module" src="client.js"></script>

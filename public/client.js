@@ -5,7 +5,7 @@ const socket = io();
 const game = new Chess(); // ban co o phia trinh duyet: hien thi + goi y nuoc di + (che do may) tu xu ly luat
 
 // ---------- Cac phan tu man hinh ----------
-const modeMenuEl = document.getElementById("mode-menu");
+const menuScreenEl = document.getElementById("menu-screen");
 const modeFriendBtn = document.getElementById("mode-friend");
 const modeRobotBtn = document.getElementById("mode-robot");
 const modeTournamentBtn = document.getElementById("mode-tournament");
@@ -31,6 +31,8 @@ const tournamentWaitMsgEl = document.getElementById("tournament-wait-msg");
 const gameEl = document.getElementById("game");
 const statusEl = document.getElementById("status");
 const boardEl = document.getElementById("board");
+const leaveGameBtnEl = document.getElementById("leave-game-btn");
+const moveHistoryListEl = document.getElementById("move-history-list");
 
 // ---------- Hinh anh quan co (bo "cburnett" mien phi, Lichess.org dang dung) ----------
 const PIECE_LETTER = { p: "P", n: "N", b: "B", r: "R", q: "Q", k: "K" };
@@ -49,8 +51,67 @@ let lastMove = null;
 let tournamentCode = null;
 let isTournamentHost = false;
 
+let moveHistory = []; // danh sach { san, piece, color } cua tung nuoc di, theo dung thu tu
+
+function buildMoveEntry(move) {
+  const span = document.createElement("span");
+  span.className = "move-entry";
+
+  const icon = document.createElement("img");
+  icon.className = "move-piece-icon";
+  icon.src = pieceImageUrl(move.color, move.piece);
+  icon.alt = "";
+  icon.draggable = false;
+  span.appendChild(icon);
+
+  span.appendChild(document.createTextNode(move.san));
+  return span;
+}
+
+function renderMoveHistory() {
+  moveHistoryListEl.innerHTML = "";
+  for (let i = 0; i < moveHistory.length; i += 2) {
+    const moveNumber = i / 2 + 1;
+    const white = moveHistory[i];
+    const black = moveHistory[i + 1];
+
+    const li = document.createElement("li");
+
+    const num = document.createElement("span");
+    num.className = "move-num";
+    num.textContent = `${moveNumber}.`;
+    li.appendChild(num);
+
+    li.appendChild(buildMoveEntry(white));
+    if (black) li.appendChild(buildMoveEntry(black));
+
+    moveHistoryListEl.appendChild(li);
+  }
+  moveHistoryListEl.scrollTop = moveHistoryListEl.scrollHeight;
+}
+
+function resetGameState() {
+  game.reset();
+  selectedSquare = null;
+  legalTargets = [];
+  lastMove = null;
+  moveHistory = [];
+  myColor = null;
+  vsBot = false;
+  roomCode = null;
+}
+
+leaveGameBtnEl.addEventListener("click", () => {
+  if (!confirm("Bạn có chắc muốn rời khỏi ván đấu này?")) return;
+  if (!vsBot && roomCode) {
+    socket.emit("leave-room");
+  }
+  resetGameState();
+  showScreen("menu");
+});
+
 // ---------- Chuyen man hinh ----------
-const SCREENS = { menu: modeMenuEl, lobby: lobbyEl, tournament: tournamentEl, game: gameEl };
+const SCREENS = { menu: menuScreenEl, lobby: lobbyEl, tournament: tournamentEl, game: gameEl };
 function showScreen(name) {
   for (const key in SCREENS) {
     SCREENS[key].classList.toggle("hidden", key !== name);
@@ -164,15 +225,12 @@ socket.on("tournament-bye", (msg) => {
 // ---------- Choi voi may (AI cuc bo, khong can server) ----------
 
 function startBotGame() {
+  resetGameState();
   vsBot = true;
   myColor = "w";
-  roomCode = null;
-  game.reset();
-  selectedSquare = null;
-  legalTargets = [];
-  lastMove = null;
   showScreen("game");
   renderBoard();
+  renderMoveHistory();
   updateStatus();
 }
 
@@ -251,9 +309,11 @@ function botPlayMove() {
     }
   }
 
-  game.move(bestMove);
+  const result = game.move(bestMove);
   lastMove = { from: bestMove.from, to: bestMove.to };
+  moveHistory.push({ san: result.san, piece: result.piece, color: result.color });
   renderBoard();
+  renderMoveHistory();
   updateStatus(computeLocalStatus());
 }
 
@@ -270,17 +330,21 @@ socket.on("start-game", ({ fen }) => {
   selectedSquare = null;
   legalTargets = [];
   lastMove = null;
+  moveHistory = [];
   showScreen("game");
   renderBoard();
+  renderMoveHistory();
   updateStatus();
 });
 
-socket.on("move-made", ({ fen, lastMove: lm, status }) => {
+socket.on("move-made", ({ fen, lastMove: lm, san, piece, color, status }) => {
   game.load(fen);
   lastMove = lm;
   selectedSquare = null;
   legalTargets = [];
+  if (san) moveHistory.push({ san, piece, color });
   renderBoard();
+  renderMoveHistory();
   updateStatus(status);
 });
 
@@ -365,6 +429,20 @@ function renderBoard() {
         squareEl.classList.add("in-check");
       }
 
+      // Nhan toa do: so hang o cot dau tien, chu cot o hang cuoi cung (kieu ban co chuan)
+      if (file === orderedFiles[0]) {
+        const rankLabel = document.createElement("span");
+        rankLabel.className = "coord-label rank-label";
+        rankLabel.textContent = rank;
+        squareEl.appendChild(rankLabel);
+      }
+      if (rank === orderedRanks[orderedRanks.length - 1]) {
+        const fileLabel = document.createElement("span");
+        fileLabel.className = "coord-label file-label";
+        fileLabel.textContent = file;
+        squareEl.appendChild(fileLabel);
+      }
+
       const piece = game.get(square);
       if (piece) {
         const pieceEl = document.createElement("img");
@@ -389,11 +467,13 @@ function onSquareClick(square) {
     const isPromotion = piece?.type === "p" && (square[1] === "8" || square[1] === "1");
 
     if (vsBot) {
-      game.move({ from: selectedSquare, to: square, promotion: isPromotion ? "q" : undefined });
+      const result = game.move({ from: selectedSquare, to: square, promotion: isPromotion ? "q" : undefined });
       lastMove = { from: selectedSquare, to: square };
+      moveHistory.push({ san: result.san, piece: result.piece, color: result.color });
       selectedSquare = null;
       legalTargets = [];
       renderBoard();
+      renderMoveHistory();
 
       const status = computeLocalStatus();
       updateStatus(status);
