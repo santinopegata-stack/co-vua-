@@ -64,7 +64,10 @@ function buildMoveEntry(move) {
   icon.draggable = false;
   span.appendChild(icon);
 
-  span.appendChild(document.createTextNode(move.san));
+  // Icon da the hien loai quan roi nen bo chu cai ky hieu quan (N, B, R, Q, K) cho de doc,
+  // chi giu lai o di toi / an quan / phong cap / chieu tuong (vd: "Nc6" -> "c6")
+  const displaySan = move.piece !== "p" ? move.san.replace(/^[NBRQK]/, "") : move.san;
+  span.appendChild(document.createTextNode(displaySan));
   return span;
 }
 

@@ -522,8 +522,8 @@ h1 {
   width: var(--board-size, 100%);
   max-width: 820px;
   margin-top: 16px;
-  background: #1e2028;
-  border: 1px solid #2a2c36;
+  background: #fbe58a;
+  border: 1px solid #e6cc6e;
   border-radius: 12px;
   padding: 14px 18px;
 }
@@ -531,7 +531,7 @@ h1 {
 #move-history-box h3 {
   margin: 0 0 8px;
   font-size: 14px;
-  color: #9a9daa;
+  color: #6b4f08;
   font-weight: 600;
 }
 
@@ -546,7 +546,7 @@ h1 {
   gap: 6px 12px;
   font-family: "Consolas", "Courier New", monospace;
   font-size: 13px;
-  color: #d6d8e0;
+  color: #2c2306;
 }
 
 #move-history-list li {
@@ -557,7 +557,7 @@ h1 {
 }
 
 .move-num {
-  color: #6a6d78;
+  color: #7a5c0a;
   min-width: 20px;
 }
 
