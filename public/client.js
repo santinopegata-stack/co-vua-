@@ -11,6 +11,9 @@ const joinBtnEl = document.getElementById("join-btn");
 const gameEl = document.getElementById("game");
 const statusEl = document.getElementById("status");
 const boardEl = document.getElementById("board");
+const inviteBoxEl = document.getElementById("invite-box");
+const inviteLinkEl = document.getElementById("invite-link");
+const copyLinkBtnEl = document.getElementById("copy-link-btn");
 
 // Ky hieu quan co bang Unicode. Dung chung 1 bo glyph dac (filled) cho ca 2 mau,
 // mau trang/den that su duoc to bang CSS (piece-white / piece-black) de luon ro rang.
@@ -22,23 +25,48 @@ let selectedSquare = null;
 let legalTargets = []; // danh sach o co the di toi tu selectedSquare
 let lastMove = null;
 
-joinBtnEl.addEventListener("click", () => {
-  const code = roomInputEl.value.trim();
+function joinRoom(code) {
+  code = code.trim();
   if (!code) {
     lobbyMessageEl.textContent = "Vui long nhap ma phong.";
     return;
   }
   roomCode = code;
+  roomInputEl.value = code;
   socket.emit("join-room", code);
+}
+
+joinBtnEl.addEventListener("click", () => joinRoom(roomInputEl.value));
+
+copyLinkBtnEl.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(inviteLinkEl.value);
+    copyLinkBtnEl.textContent = "Đã sao chép!";
+    setTimeout(() => (copyLinkBtnEl.textContent = "Sao chép"), 1500);
+  } catch {
+    inviteLinkEl.select();
+  }
 });
 
 socket.on("join-error", (msg) => {
   lobbyMessageEl.textContent = msg;
+  inviteBoxEl.classList.add("hidden");
 });
 
 socket.on("waiting-for-opponent", () => {
-  lobbyMessageEl.textContent = "Da vao phong. Dang cho doi thu tham gia...";
+  lobbyMessageEl.textContent = "Đã vào phòng. Đang chờ đối thủ tham gia...";
+
+  const url = new URL(window.location.href);
+  url.searchParams.set("room", roomCode);
+  inviteLinkEl.value = url.toString();
+  inviteBoxEl.classList.remove("hidden");
 });
+
+// Neu link co san ?room=... (ai do gui link moi) thi tu dong vao phong luon
+const roomFromUrl = new URLSearchParams(window.location.search).get("room");
+if (roomFromUrl) {
+  joinRoom(roomFromUrl);
+}
 
 socket.on("joined", ({ color }) => {
   myColor = color;

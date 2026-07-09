@@ -10,10 +10,18 @@
   <h1>♟ Cờ Vua Online</h1>
 
   <div id="lobby">
-    <p>Nhập một mã phòng bất kỳ và gửi cho bạn của bạn để cùng vào chơi.</p>
+    <p>Nhập một mã phòng bất kỳ rồi bấm Vào phòng. Sau đó gửi link mời cho bạn của bạn để cùng chơi.</p>
     <input id="room-input" type="text" placeholder="Ví dụ: phong123" />
     <button id="join-btn">Vào phòng</button>
     <p id="lobby-message"></p>
+
+    <div id="invite-box" class="hidden">
+      <p>Gửi link này cho bạn của bạn để vào chung phòng:</p>
+      <div id="invite-row">
+        <input id="invite-link" type="text" readonly />
+        <button id="copy-link-btn">Sao chép</button>
+      </div>
+    </div>
   </div>
 
   <div id="game" class="hidden">
